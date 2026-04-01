@@ -7,9 +7,22 @@ const subjectRoutes = require('./routes/subjectRoutes')
 
 const app = express()
 
+const normalizeOrigin = (value) => (value ? value.replace(/\/$/, '') : value)
+const allowedOrigins = [process.env.CLIENT_URL, 'http://localhost:5173']
+  .filter(Boolean)
+  .map(normalizeOrigin)
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true)
+      const normalizedOrigin = normalizeOrigin(origin)
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        return callback(null, true)
+      }
+      return callback(new Error('Not allowed by CORS'))
+    },
+    credentials: true,
   }),
 )
 app.use(express.json())
