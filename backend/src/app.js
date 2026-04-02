@@ -8,7 +8,7 @@ const subjectRoutes = require('./routes/subjectRoutes')
 const app = express()
 
 const normalizeOrigin = (value) => (value ? value.replace(/\/$/, '') : value)
-const allowedOrigins = [process.env.CLIENT_URL, 'http://localhost:5173']
+const allowedOrigins = [process.env.CLIENT_URL, 'https://developer-vault.vercel.app', 'http://localhost:5173']
   .filter(Boolean)
   .map(normalizeOrigin)
 
