@@ -45,7 +45,7 @@ const getSubjects = asyncHandler(async (_req, res) => {
 
 const getSubjectById = asyncHandler(async (req, res) => {
   ensureObjectId(req.params.id, 'subject id')
-  const subject = await Subject.findById(req.params.id)
+  const subject = await Subject.findById(req.params.id).lean()
 
   if (!subject) {
     return res.status(404).json({ message: 'Subject not found.' })
