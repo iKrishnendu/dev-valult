@@ -19,7 +19,7 @@ const getSubjectTree = async (subject) => {
   }, {})
 
   return {
-    ...subject.toObject(),
+    ...(subject.toObject ? subject.toObject() : subject),
     categories: categories.map((category) => ({
       ...category,
       resources: resourcesByCategory[String(category._id)] ?? [],
