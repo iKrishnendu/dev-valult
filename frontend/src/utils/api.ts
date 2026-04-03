@@ -10,7 +10,9 @@ import type {
 } from "../types";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "/api",
+  baseURL: import.meta.env.DEV
+    ? "http://localhost:5000/api"
+    : "/api",
 });
 
 export const subjectApi = {

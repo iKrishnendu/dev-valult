@@ -1,6 +1,5 @@
 const cors = require("cors");
 const express = require("express");
-const path = require("path");
 
 const categoryRoutes = require("./routes/categoryRoutes");
 const resourceRoutes = require("./routes/resourceRoutes");
@@ -8,14 +7,8 @@ const subjectRoutes = require("./routes/subjectRoutes");
 
 const app = express();
 
-// Serve static files from frontend build
-app.use(express.static(path.join(__dirname, "../../frontend/dist")));
-
-const normalizeOrigin = (value) => (value ? value.replace(/\/$/, "") : value);
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  "http://localhost:5173",
-]
+const normalizeOrigin = (value) => (value ? value.replace(/\/$/, "") : "");
+const allowedOrigins = [process.env.CLIENT_URL, "http://localhost:5173"]
   .filter(Boolean)
   .map(normalizeOrigin);
 
@@ -23,10 +16,16 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
+
       const normalizedOrigin = normalizeOrigin(origin);
-      if (allowedOrigins.includes(normalizedOrigin)) {
+
+      if (
+        allowedOrigins.includes(normalizedOrigin) ||
+        normalizedOrigin.includes("vercel.app") // allow preview deployments
+      ) {
         return callback(null, true);
       }
+
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
@@ -41,11 +40,6 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/resources", resourceRoutes);
-
-// Serve frontend for all other routes (SPA)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
-});
 
 app.use((req, res) => {
   res.status(404).json({ message: `Route not found: ${req.originalUrl}` });
