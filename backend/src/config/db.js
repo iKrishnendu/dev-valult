@@ -1,31 +1,27 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
-let cachedConnection = global.mongooseConnection
+let cached = global.mongoose;
 
-if (!cachedConnection) {
-  cachedConnection = global.mongooseConnection = {
-    conn: null,
-    promise: null,
-  }
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
 }
 
 const connectDb = async () => {
-  if (cachedConnection.conn) {
-    return cachedConnection.conn.connection.host
-  }
+  if (cached.conn) return cached.conn.connection.host;
 
   if (!process.env.MONGODB_URI) {
-    throw new Error('MONGODB_URI is not defined.')
+    throw new Error("MONGODB_URI is missing");
   }
 
-  if (!cachedConnection.promise) {
-    cachedConnection.promise = mongoose.connect(process.env.MONGODB_URI, {
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGODB_URI, {
       bufferCommands: false,
-    })
+      serverSelectionTimeoutMS: 5000,
+    });
   }
 
-  cachedConnection.conn = await cachedConnection.promise
-  return cachedConnection.conn.connection.host
-}
+  cached.conn = await cached.promise;
+  return cached.conn.connection.host;
+};
 
-module.exports = connectDb
+module.exports = connectDb;
