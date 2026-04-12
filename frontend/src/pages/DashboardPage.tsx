@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   FiBookOpen,
   FiFolderPlus,
@@ -7,21 +7,21 @@ import {
   FiSearch,
   FiStar,
   FiTrash2,
-} from 'react-icons/fi'
-import CategoryFormModal from '../components/CategoryFormModal'
-import CategorySection from '../components/CategorySection'
-import EmptyState from '../components/EmptyState'
-import ResourceFormModal from '../components/ResourceFormModal'
-import Sidebar from '../components/Sidebar'
-import SubjectFormModal from '../components/SubjectFormModal'
-import ThemeToggle from '../components/ThemeToggle'
-import VideoModal from '../components/VideoModal'
-import { useTheme } from '../hooks/useTheme'
-import { useDevVaultStore } from '../store/useDevVaultStore'
-import type { Category, Resource } from '../types'
+} from "react-icons/fi";
+import CategoryFormModal from "../components/CategoryFormModal";
+import CategorySection from "../components/CategorySection";
+import EmptyState from "../components/EmptyState";
+import ResourceFormModal from "../components/ResourceFormModal";
+import Sidebar from "../components/Sidebar";
+import SubjectFormModal from "../components/SubjectFormModal";
+import ThemeToggle from "../components/ThemeToggle";
+import VideoModal from "../components/VideoModal";
+import { useTheme } from "../hooks/useTheme";
+import { useDevVaultStore } from "../store/useDevVaultStore";
+import type { Category, Resource } from "../types";
 
 function DashboardPage() {
-  const { theme, toggleTheme } = useTheme()
+  const { theme, toggleTheme } = useTheme();
   const {
     subjects,
     activeSubjectId,
@@ -42,64 +42,79 @@ function DashboardPage() {
     deleteResource,
     toggleBookmark,
     clearError,
-  } = useDevVaultStore()
+    logout,
+    currentUser,
+  } = useDevVaultStore();
 
-  const [searchTerm, setSearchTerm] = useState('')
-  const [bookmarksOnly, setBookmarksOnly] = useState(false)
-  const [subjectModalMode, setSubjectModalMode] = useState<'create' | 'edit' | null>(null)
-  const [categoryEditor, setCategoryEditor] = useState<Category | null>(null)
-  const [showCreateCategory, setShowCreateCategory] = useState(false)
-  const [resourceEditor, setResourceEditor] = useState<Resource | null>(null)
-  const [resourceCategoryId, setResourceCategoryId] = useState<string | null>(null)
-  const [videoPreview, setVideoPreview] = useState<{ title: string; embedUrl: string } | null>(null)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [bookmarksOnly, setBookmarksOnly] = useState(false);
+  const [subjectModalMode, setSubjectModalMode] = useState<
+    "create" | "edit" | null
+  >(null);
+  const [categoryEditor, setCategoryEditor] = useState<Category | null>(null);
+  const [showCreateCategory, setShowCreateCategory] = useState(false);
+  const [resourceEditor, setResourceEditor] = useState<Resource | null>(null);
+  const [resourceCategoryId, setResourceCategoryId] = useState<string | null>(
+    null,
+  );
+  const [videoPreview, setVideoPreview] = useState<{
+    title: string;
+    embedUrl: string;
+  } | null>(null);
 
   useEffect(() => {
-    void initialize()
-  }, [initialize])
+    void initialize();
+  }, [initialize]);
 
   const filteredCategories = useMemo(() => {
-    if (!activeSubject) return []
+    if (!activeSubject) return [];
 
     return activeSubject.categories
       .map((category) => ({
         ...category,
         resources: category.resources.filter((resource) => {
-          const query = searchTerm.toLowerCase()
+          const query = searchTerm.toLowerCase();
           const matchesSearch =
             resource.title.toLowerCase().includes(query) ||
-            resource.url.toLowerCase().includes(query)
-          const matchesBookmark = bookmarksOnly ? resource.isBookmarked : true
-          return matchesSearch && matchesBookmark
+            resource.url.toLowerCase().includes(query);
+          const matchesBookmark = bookmarksOnly ? resource.isBookmarked : true;
+          return matchesSearch && matchesBookmark;
         }),
       }))
-      .filter((category) => category.resources.length > 0 || (!searchTerm && !bookmarksOnly))
-  }, [activeSubject, bookmarksOnly, searchTerm])
+      .filter(
+        (category) =>
+          category.resources.length > 0 || (!searchTerm && !bookmarksOnly),
+      );
+  }, [activeSubject, bookmarksOnly, searchTerm]);
 
   const totalVisibleResources = filteredCategories.reduce(
     (count, category) => count + category.resources.length,
     0,
-  )
+  );
 
   const handleDeleteSubject = async () => {
     if (
       !activeSubject ||
       !window.confirm(`Delete ${activeSubject.name} and all nested data?`)
     ) {
-      return
+      return;
     }
 
-    await deleteSubject(activeSubject._id)
-  }
+    await deleteSubject(activeSubject._id);
+  };
 
   const handleDeleteCategory = async (category: Category) => {
-    if (!window.confirm(`Delete ${category.title} and all resources inside it?`)) return
-    await deleteCategory(category._id)
-  }
+    if (
+      !window.confirm(`Delete ${category.title} and all resources inside it?`)
+    )
+      return;
+    await deleteCategory(category._id);
+  };
 
   const handleDeleteResource = async (resource: Resource) => {
-    if (!window.confirm(`Delete ${resource.title}?`)) return
-    await deleteResource(resource._id)
-  }
+    if (!window.confirm(`Delete ${resource.title}?`)) return;
+    await deleteResource(resource._id);
+  };
 
   return (
     <div className="min-h-screen px-4 py-4 text-slate-900 transition-colors duration-200 dark:text-white sm:px-6 lg:px-8">
@@ -108,7 +123,7 @@ function DashboardPage() {
           subjects={subjects}
           activeSubjectId={activeSubjectId}
           onSelect={(id) => void selectSubject(id)}
-          onCreateSubject={() => setSubjectModalMode('create')}
+          onCreateSubject={() => setSubjectModalMode("create")}
         />
 
         <main className="space-y-4">
@@ -119,18 +134,32 @@ function DashboardPage() {
                   <FiLayers size={14} />
                   Knowledge dashboard
                 </div>
+                {currentUser ? (
+                  <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-300">
+                    Hello, {currentUser.name}! Your private subjects are listed
+                    below.
+                  </p>
+                ) : null}
                 <h2 className="mt-4 font-display text-4xl font-bold text-slate-900 dark:text-white">
-                  {activeSubject?.name ?? 'Build your first subject'}
+                  {activeSubject?.name ?? "Build your first subject"}
                 </h2>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
-                  Organize official docs, development notes, quick reviews, and interview prep in
-                  a single clean workflow. Search across resources, star important links, and open
-                  videos directly inside the app.
+                  Organize official docs, development notes, quick reviews, and
+                  interview prep in a single clean workflow. Search across
+                  resources, star important links, and open videos directly
+                  inside the app.
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
                 <ThemeToggle theme={theme} onToggle={toggleTheme} />
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-200 dark:hover:border-slate-500"
+                >
+                  Logout
+                </button>
                 <button
                   type="button"
                   onClick={() => setShowCreateCategory(true)}
@@ -142,7 +171,7 @@ function DashboardPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSubjectModalMode('edit')}
+                  onClick={() => setSubjectModalMode("edit")}
                   disabled={!activeSubject}
                   className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
                 >
@@ -197,12 +226,14 @@ function DashboardPage() {
                   onClick={() => setBookmarksOnly((current) => !current)}
                   className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
                     bookmarksOnly
-                      ? 'bg-amber-400/20 text-amber-700 ring-1 ring-inset ring-amber-400/30 dark:text-amber-300'
-                      : 'border border-slate-200 bg-white/80 text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-200'
+                      ? "bg-amber-400/20 text-amber-700 ring-1 ring-inset ring-amber-400/30 dark:text-amber-300"
+                      : "border border-slate-200 bg-white/80 text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-200"
                   }`}
                 >
                   <FiStar size={16} />
-                  {bookmarksOnly ? 'Showing starred only' : 'Filter starred resources'}
+                  {bookmarksOnly
+                    ? "Showing starred only"
+                    : "Filter starred resources"}
                 </button>
               </div>
             </div>
@@ -212,7 +243,11 @@ function DashboardPage() {
             <div className="glass-panel rounded-3xl border-red-200/60 bg-red-50/80 p-4 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-200">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span>{error}</span>
-                <button type="button" onClick={clearError} className="font-semibold underline">
+                <button
+                  type="button"
+                  onClick={clearError}
+                  className="font-semibold underline"
+                >
                   Dismiss
                 </button>
               </div>
@@ -228,7 +263,7 @@ function DashboardPage() {
               title="No subjects yet"
               description="Create your first subject to start organizing docs, articles, videos, and revision links."
               actionLabel="Create subject"
-              onAction={() => setSubjectModalMode('create')}
+              onAction={() => setSubjectModalMode("create")}
             />
           ) : filteredCategories.length ? (
             <section className="space-y-4">
@@ -238,13 +273,17 @@ function DashboardPage() {
                     Focus board
                   </h3>
                   <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                    {totalVisibleResources} resources visible across {filteredCategories.length}{' '}
-                    categories.
+                    {totalVisibleResources} resources visible across{" "}
+                    {filteredCategories.length} categories.
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setResourceCategoryId(activeSubject.categories[0]?._id ?? null)}
+                  onClick={() =>
+                    setResourceCategoryId(
+                      activeSubject.categories[0]?._id ?? null,
+                    )
+                  }
                   className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-200 dark:hover:border-slate-500"
                 >
                   <FiFolderPlus size={16} />
@@ -279,7 +318,9 @@ function DashboardPage() {
               title="No resources match these filters"
               description="Try a different search query, turn off the bookmark filter, or add new resources."
               actionLabel="Add resource"
-              onAction={() => setResourceCategoryId(activeSubject.categories[0]?._id ?? null)}
+              onAction={() =>
+                setResourceCategoryId(activeSubject.categories[0]?._id ?? null)
+              }
             />
           )}
 
@@ -291,7 +332,7 @@ function DashboardPage() {
         </main>
       </div>
 
-      {subjectModalMode === 'create' ? (
+      {subjectModalMode === "create" ? (
         <SubjectFormModal
           title="Create subject"
           description="Add a learning track such as HTML, JavaScript, React, or MongoDB."
@@ -301,7 +342,7 @@ function DashboardPage() {
         />
       ) : null}
 
-      {subjectModalMode === 'edit' && activeSubject ? (
+      {subjectModalMode === "edit" && activeSubject ? (
         <SubjectFormModal
           title="Edit subject"
           description="Rename this subject without affecting its categories or resources."
@@ -318,7 +359,9 @@ function DashboardPage() {
           description="Group related resources under official docs, quick review, development, or interview prep."
           submitLabel="Create category"
           onClose={() => setShowCreateCategory(false)}
-          onSubmit={(title) => createCategory({ title, subjectId: activeSubject._id })}
+          onSubmit={(title) =>
+            createCategory({ title, subjectId: activeSubject._id })
+          }
         />
       ) : null}
 
@@ -342,8 +385,8 @@ function DashboardPage() {
             title: category.title,
           }))}
           onClose={() => {
-            setResourceEditor(null)
-            setResourceCategoryId(null)
+            setResourceEditor(null);
+            setResourceCategoryId(null);
           }}
           onSubmit={(payload) =>
             resourceEditor
@@ -361,19 +404,29 @@ function DashboardPage() {
         />
       ) : null}
     </div>
-  )
+  );
 }
 
-function StatCard({ label, value, icon }: { label: string; value: number; icon: ReactNode }) {
+function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number;
+  icon: ReactNode;
+}) {
   return (
     <div className="rounded-[28px] border border-white/70 bg-white/85 p-5 dark:border-slate-800 dark:bg-slate-950/40">
-      <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{label}</div>
+      <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+        {label}
+      </div>
       <div className="mt-3 flex items-end justify-between">
         <span className="font-display text-4xl font-bold">{value}</span>
         {icon}
       </div>
     </div>
-  )
+  );
 }
 
-export default DashboardPage
+export default DashboardPage;

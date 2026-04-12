@@ -8,7 +8,9 @@ const {
 } = require("../controllers/subjectController");
 
 const router = express.Router();
+const { protect } = require("../middleware/authMiddleware");
 
+router.use(protect);
 router.route("/").get(getSubjects).post(createSubject);
 router
   .route("/:id")

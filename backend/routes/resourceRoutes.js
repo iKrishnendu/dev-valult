@@ -1,13 +1,15 @@
-const express = require('express')
+const express = require("express");
 const {
   createResource,
   deleteResource,
   updateResource,
-} = require('../controllers/resourceController')
+} = require("../controllers/resourceController");
+const { protect } = require("../middleware/authMiddleware");
 
-const router = express.Router()
+const router = express.Router();
 
-router.route('/').post(createResource)
-router.route('/:id').put(updateResource).delete(deleteResource)
+router.use(protect);
+router.route("/").post(createResource);
+router.route("/:id").put(updateResource).delete(deleteResource);
 
-module.exports = router
+module.exports = router;

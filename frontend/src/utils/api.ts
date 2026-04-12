@@ -1,5 +1,7 @@
 import axios from "axios";
 import type {
+  AuthPayload,
+  AuthResponse,
   Category,
   CategoryPayload,
   Resource,
@@ -7,6 +9,7 @@ import type {
   SubjectDetail,
   SubjectPayload,
   SubjectSummary,
+  User,
 } from "../types";
 
 const api = axios.create({
@@ -14,6 +17,31 @@ const api = axios.create({
     ? "http://localhost:5000/api"
     : import.meta.env.VITE_API_URL || "/api",
 });
+
+api.interceptors.request.use((config) => {
+  const token = window.localStorage.getItem("devvault_token");
+
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+export const authApi = {
+  register: async (payload: AuthPayload) => {
+    const { data } = await api.post<AuthResponse>("/auth/register", payload);
+    return data;
+  },
+  login: async (payload: AuthPayload) => {
+    const { data } = await api.post<AuthResponse>("/auth/login", payload);
+    return data;
+  },
+  getProfile: async () => {
+    const { data } = await api.get<User>("/auth/profile");
+    return data;
+  },
+};
 
 export const subjectApi = {
   getAll: async () => {

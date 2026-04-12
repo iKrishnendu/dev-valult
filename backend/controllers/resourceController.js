@@ -13,7 +13,10 @@ const createResource = asyncHandler(async (req, res) => {
   }
 
   ensureObjectId(categoryId, "category id");
-  const category = await Category.findById(categoryId);
+  const category = await Category.findOne({
+    _id: categoryId,
+    userId: req.userId,
+  });
 
   if (!category) {
     return res.status(404).json({ message: "Category not found." });
@@ -25,6 +28,7 @@ const createResource = asyncHandler(async (req, res) => {
     type,
     categoryId,
     isBookmarked: Boolean(isBookmarked),
+    userId: req.userId,
   });
 
   res.status(201).json(resource);
@@ -44,7 +48,10 @@ const updateResource = asyncHandler(async (req, res) => {
 
   if (categoryId !== undefined) {
     ensureObjectId(categoryId, "category id");
-    const category = await Category.findById(categoryId);
+    const category = await Category.findOne({
+      _id: categoryId,
+      userId: req.userId,
+    });
 
     if (!category) {
       return res.status(404).json({ message: "Category not found." });
@@ -53,10 +60,14 @@ const updateResource = asyncHandler(async (req, res) => {
     nextValues.categoryId = categoryId;
   }
 
-  const resource = await Resource.findByIdAndUpdate(req.params.id, nextValues, {
-    new: true,
-    runValidators: true,
-  });
+  const resource = await Resource.findOneAndUpdate(
+    { _id: req.params.id, userId: req.userId },
+    nextValues,
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
 
   if (!resource) {
     return res.status(404).json({ message: "Resource not found." });
@@ -67,7 +78,10 @@ const updateResource = asyncHandler(async (req, res) => {
 
 const deleteResource = asyncHandler(async (req, res) => {
   ensureObjectId(req.params.id, "resource id");
-  const resource = await Resource.findById(req.params.id);
+  const resource = await Resource.findOne({
+    _id: req.params.id,
+    userId: req.userId,
+  });
 
   if (!resource) {
     return res.status(404).json({ message: "Resource not found." });

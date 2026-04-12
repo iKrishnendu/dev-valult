@@ -14,13 +14,17 @@ const createCategory = asyncHandler(async (req, res) => {
   }
 
   ensureObjectId(subjectId, "subject id");
-  const subject = await Subject.findById(subjectId);
+  const subject = await Subject.findOne({ _id: subjectId, userId: req.userId });
 
   if (!subject) {
     return res.status(404).json({ message: "Subject not found." });
   }
 
-  const category = await Category.create({ title: title.trim(), subjectId });
+  const category = await Category.create({
+    title: title.trim(),
+    subjectId,
+    userId: req.userId,
+  });
   res.status(201).json(category);
 });
 
@@ -32,8 +36,8 @@ const updateCategory = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Category title is required." });
   }
 
-  const category = await Category.findByIdAndUpdate(
-    req.params.id,
+  const category = await Category.findOneAndUpdate(
+    { _id: req.params.id, userId: req.userId },
     { title: title.trim() },
     { new: true, runValidators: true },
   );
@@ -47,13 +51,16 @@ const updateCategory = asyncHandler(async (req, res) => {
 
 const deleteCategory = asyncHandler(async (req, res) => {
   ensureObjectId(req.params.id, "category id");
-  const category = await Category.findById(req.params.id);
+  const category = await Category.findOne({
+    _id: req.params.id,
+    userId: req.userId,
+  });
 
   if (!category) {
     return res.status(404).json({ message: "Category not found." });
   }
 
-  await Resource.deleteMany({ categoryId: category._id });
+  await Resource.deleteMany({ categoryId: category._id, userId: req.userId });
   await category.deleteOne();
 
   res.json({ message: "Category deleted successfully." });

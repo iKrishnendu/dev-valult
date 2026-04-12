@@ -1,7 +1,13 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const resourceSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     title: {
       type: String,
       required: true,
@@ -15,12 +21,12 @@ const resourceSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['youtube', 'article', 'docs', 'course'],
+      enum: ["youtube", "article", "docs", "course"],
       required: true,
     },
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Category',
+      ref: "Category",
       required: true,
       index: true,
     },
@@ -30,6 +36,6 @@ const resourceSchema = new mongoose.Schema(
     },
   },
   { timestamps: true },
-)
+);
 
-module.exports = mongoose.model('Resource', resourceSchema)
+module.exports = mongoose.model("Resource", resourceSchema);
